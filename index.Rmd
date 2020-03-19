@@ -1,0 +1,191 @@
+---
+title: "India COVID-19"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    social: menu
+    vertical_layout: fill
+    logo: images/cc_2.png
+    favicon: images/favicon.png
+    
+editor_options: 
+  chunk_output_type: console
+---
+<style>                     
+.navbar {
+  background-color:#033240;
+  border-color:black;
+}
+</style>
+
+<script>
+$('.navbar-logo').wrap('<a href="https://cognitivecare.com/">');
+</script>
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(leaflet)
+library(highcharter)
+library(plotly)
+
+confirmed_color <- "purple"
+active_color <- "#1f77b4"
+recovered_color <- "forestgreen"
+death_color <- "red"
+
+ind <- read.csv("./data/complete.csv")
+ind <- ind %>%
+        mutate(date = as.Date(Date, format = "%d-%m-%Y"))%>%
+        mutate(confirmed = Total.Confirmed.cases..Indian.National. + Total.Confirmed.cases...Foreign.National..) %>% 
+        pivot_longer(cols = c(confirmed, Cured, Death ), names_to = "type", values_to = "cases")%>% 
+        mutate(type = recode(type, Cured = "recovered", Death = "death"))%>%
+        filter(cases !=0)%>% 
+        select(-c(Total.Confirmed.cases..Indian.National., Total.Confirmed.cases...Foreign.National.., Date)) %>%
+        rename(region = Name.of.State...UT)
+colnames(ind) <- tolower(colnames(ind))
+
+## create three dataframes
+df <- ind %>%
+        group_by(region, type) %>%
+        filter(date == max(date)) %>%
+        pivot_wider(names_from = type,values_from = cases)%>%
+        arrange(-confirmed)%>%
+        mutate(unrecovered = confirmed - ifelse(is.na(recovered), 0, recovered) - ifelse(is.na(death), 0, death)) %>%
+        ungroup()%>%
+        mutate(region = trimws(region))%>%
+        mutate(region = factor(region, levels = region))%>%
+        select(-c(latitude, longitude, date))
+
+
+df_daily <- ind %>%
+        group_by(date, type)%>%
+        summarise(total = sum(cases, na.rm =T))%>%
+        pivot_wider(names_from = type, values_from = total)%>%
+        mutate(active = confirmed - ifelse(is.na(recovered), 0, recovered) - ifelse(is.na(death), 0, death))%>%
+        ungroup()
+
+
+df1 <- ind %>% filter(date == max(date))
+df_confirmed <- df1 %>% 
+              filter(type == "confirmed")%>%
+              select(name=region, lat=latitude, lon=longitude, z=cases)
+df_death <- df1 %>% 
+              filter(type == "death")%>%
+              select(name=region, lat=latitude, lon=longitude, z=cases)
+df_rec <- df1 %>% 
+              filter(type == "recovered")%>%
+              select(name=region, lat=latitude, lon=longitude, z=cases)
+df_bar <- df %>% select(region, active=unrecovered, recovered, death) %>% 
+              pivot_longer(c(active, recovered, death), names_to = "type", values_to = "cases")%>%
+              mutate(type = factor(type, levels = c("active", "recovered", "death")))
+
+```
+
+Overview
+=======================================================================
+row
+-----------------------------------------------------------------------
+
+### confirmed {.value-box}
+
+```{r}
+
+valueBox(value = paste(format(sum(df$confirmed), big.mark = ","), "", sep = " "), 
+         caption = "Total Confirmed Cases", 
+         icon = "fas fa-user-md", 
+         color = confirmed_color)
+```
+
+
+### active {.value-box}
+
+```{r}
+valueBox(value = paste(format(sum(df$unrecovered, na.rm = TRUE), big.mark = ","), "", sep = ""), 
+         caption = "Active Cases", icon = "fas fa-ambulance", 
+         color = active_color)
+```
+
+### recovered {.value-box}
+
+```{r}
+valueBox(value = paste(format(sum(df$recovered, na.rm = TRUE), big.mark = ","), "", sep = ""), 
+         caption = "Recovered Cases", icon = "fas fa-heartbeat", 
+         color = recovered_color)
+```
+
+### death {.value-box}
+
+```{r}
+
+valueBox(value = paste(paste(format(sum(df$death, na.rm = TRUE), big.mark = ","), " (",
+                       round(100 * sum(df$death, na.rm = TRUE) / sum(df$confirmed), 1), 
+                       "%)", sep = "")),
+         caption = "Death Cases", 
+         icon = "fas fa-bed", 
+         color = death_color)
+```
+
+Row {data-height=850}
+-----------------------------------------------------------------------
+
+### **Total number of COVID-19 cases across India**
+
+```{r}
+hcmap("countries/in/custom/in-all-disputed", showInLegend = FALSE, nullColor = "#d6d6d6") %>% 
+        hc_add_series(data = df_confirmed, type = "mapbubble",
+                      name = "Confirmed", maxSize = '10%', color = confirmed_color)%>%
+        hc_add_series(data = df_death, type = "mapbubble",
+                      name = "Death", maxSize = '10%', color = "red")%>%
+        hc_add_series(data = df_rec, type = "mapbubble",
+                      name = "Recovered", maxSize = '10%', color = "blue")%>%
+        hc_mapNavigation(enabled = TRUE) 
+
+```
+
+### **Total COVID-19 cases: States and UTs**
+
+```{r}
+ggplotly(ggplot(df_bar, aes(x=region, y=cases, fill = type))+ 
+           geom_col(position = position_stack(reverse = TRUE)) +  coord_flip() +
+           scale_fill_manual(values = c("active" = confirmed_color, "recovered" = "forestgreen", "death"="red")) +
+           scale_x_discrete(limits = rev(levels(df_bar$region))) +
+           theme_minimal()+
+           theme(axis.title.y = element_blank(), legend.title = element_blank()) 
+)
+```
+
+Row {data-height=150}
+-----------------------------------------------------------------------
+
+### updates {.no-title}
+
+**Click on the legends to show/hide particular information**
+
+**Updated on on 19.03.2020 at 05:00 PM**
+
+### Sources {.no-title}
+**Sources**
+
+1. [Ministry of Health and Family Welfare | Govt. of India](https://www.mohfw.gov.in/) 
+2. [Indian Council of Medical Research | Govt. of India](https://www.icmr.nic.in/) 
+
+
+### Chart C:select state or ut (shiny selectbox){.value-box}
+
+```{r}
+
+valueBox(value = prettyNum(13316, big.mark = ","),
+         caption = "Total number of samples tested for SARS-CoV2", 
+         icon = "fas fa-vial")
+```
+
+### death {.value-box}
+
+```{r}
+
+valueBox(value = prettyNum(1431734, big.mark = ","), 
+         caption = "Total number of passengers screened at airport", 
+         icon = "fas fa-plane-arrival", 
+         color = "#ff6699")
+```
