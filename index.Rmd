@@ -172,8 +172,8 @@ Row {data-height=150}
 ### Sources {.no-title}
 **Sources**
 
-1. [Ministry of Health and Family Welfare | Govt. of India](https://www.mohfw.gov.in/) 
-2. [Indian Council of Medical Research | Govt. of India](https://www.icmr.nic.in/) 
+1. [Ministry of Health and Family Welfare](https://www.mohfw.gov.in/) 
+2. [Indian Council of Medical Research](https://www.icmr.nic.in/) 
 
 
 ### Chart C:select state or ut (shiny selectbox){.value-box}
