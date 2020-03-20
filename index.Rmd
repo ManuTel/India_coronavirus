@@ -24,7 +24,7 @@ editor_options:
 </style>
 
 <script>
-$('.navbar-logo').wrap('<a href="https://cognitivecare.com/">');
+$('.navbar-logo').wrap('<a href="https://cognitivecare.com/" target=_blank>', );
 </script>
 
 ```{r setup, include=FALSE}
@@ -163,11 +163,12 @@ ggplotly(ggplot(df_bar, aes(x=region, y=cases, fill = type))+
 Row {data-height=150}
 -----------------------------------------------------------------------
 
-### updates {.no-title}
+### updates #EDIT THIS MANUALLY {.no-title}
 
 **Click on the legends to show/hide particular information**
 
-**Updated on on 19.03.2020 at 05:00 PM**
+**Updated on 20.03.2020 at 09:00 AM** 
+
 
 ### Sources {.no-title}
 **Sources**
@@ -176,16 +177,16 @@ Row {data-height=150}
 2. [Indian Council of Medical Research](https://www.icmr.nic.in/) 
 
 
-### Chart C:select state or ut (shiny selectbox){.value-box}
+### Chart C:MANUALLY{.value-box}
 
 ```{r}
 
-valueBox(value = prettyNum(13316, big.mark = ","),
-         caption = "Total number of samples tested for SARS-CoV2", 
+valueBox(value = prettyNum(14175, big.mark = ","),
+         caption = "Total number of samples tested for SARS-CoV2 (19th March,6 PM)", 
          icon = "fas fa-vial")
 ```
 
-### death {.value-box}
+### PASSENGERS MANUALLY {.value-box}
 
 ```{r}
 
