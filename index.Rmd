@@ -30,7 +30,7 @@ $('.navbar-logo').wrap('<a href="https://cognitivecare.com/" target=_blank>', );
 ```{r setup, include=FALSE}
 library(flexdashboard)
 library(tidyverse)
-library(leaflet)
+#library(leaflet)
 library(highcharter)
 library(plotly)
 
@@ -167,7 +167,7 @@ Row {data-height=150}
 
 **Click on the legends to show/hide particular information**
 
-**Updated on 21.03.2020 at 04:45 PM** 
+**Updated on 22.03.2020 at 06:30 PM** 
 
 
 ### Sources {.no-title}
@@ -181,8 +181,8 @@ Row {data-height=150}
 
 ```{r}
 
-valueBox(value = prettyNum(15701, big.mark = ","),
-         caption = "Total number of samples tested for SARS-CoV2 (21th March,10 AM)", 
+valueBox(value = prettyNum(18127, big.mark = ","),
+         caption = "Total number of samples tested for SARS-CoV2 (22th March,6 PM)", 
          icon = "fas fa-vial")
 ```
 
@@ -190,7 +190,7 @@ valueBox(value = prettyNum(15701, big.mark = ","),
 
 ```{r}
 
-valueBox(value = prettyNum(1490303, big.mark = ","), 
+valueBox(value = prettyNum(1517327, big.mark = ","), 
          caption = "Total number of passengers screened at airport", 
          icon = "fas fa-plane-arrival", 
          color = "#ff6699")
